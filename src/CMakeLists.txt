@@ -1,0 +1,1 @@
+add_executable(xcc main.c)
