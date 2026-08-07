@@ -1,5 +1,5 @@
 
-#include <TokenTypes.h>
+#include "TokenTypes.h"
 
 typedef struct token {
 
@@ -8,8 +8,8 @@ typedef struct token {
 
 } Token;
 
-Token create_token(TokenType, char*);
-Token copy_token(Token*);
+Token* create_token(enum TokenType, char*);
+Token* copy_token(Token*);
 void free_token(Token*);
 void print_token(Token*);
 enum TokenType set_type(char*);

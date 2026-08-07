@@ -6,6 +6,7 @@ enum TokenType {
     Token_Storage,
     Token_Modifier,
     Token_Type,
+    Token_Pointer,
 
     Token_Assign,
 

@@ -18,11 +18,9 @@ struct token
 static char* Storage[] = {
     "auto",
     "static",
-    "register",
-    "extern"
 };
 
-static char* Mod_Type[] = {
+static char* Modifier[] = {
     "const",
 };
 
@@ -36,6 +34,11 @@ static char* Types[] = {
     "bool"
 };
 
+static char* Pointer[] = {
+    "const",
+    "unique"
+};
+
 enum TokenType set_type(char* s) {
 
     for(size_t i = 0; i < strlen(s); i++) {
@@ -43,16 +46,20 @@ enum TokenType set_type(char* s) {
         if(i == strlen(s)) return Token_Number;
     }
 
-    for(char i = 0; i < 4; i++) {
+    for(char i = 0; i < 2; i++) {
         if(strcmp(Storage[i], s) == 0) return Token_Storage;
     }
 
-    for(char i = 0; i < 3; i++) {
-        if(strcmp(Mod_Type[i], s) == 0) return Token_Modifier;
+    for(char i = 0; i < 1; i++) {
+        if(strcmp(Modifier[i], s) == 0) return Token_Modifier;
     }
 
     for(char i = 0; i < 7; i++) {
         if(strcmp(Types[i], s) == 0) return Token_Type;
+    }
+
+    for(char i = 0; i < 2; i++) {
+        if(strcmp(Pointer[i], s) == 0) return Token_Pointer;
     }
 
     return Token_Id;
