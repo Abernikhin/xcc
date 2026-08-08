@@ -13,10 +13,14 @@ enum TokenType {
 
     Token_Assign,
 
+    Token_Star,
+
     Token_Semicolon,
 
     Token_Id,
     Token_Number,
+
+    Token_Declaration
 
 };
 

@@ -10,12 +10,14 @@ struct node
 
 typedef struct ZeroNode
 {
+    struct node class;
     enum TokenType type;
     char* value;
 } zeroNode;
 
 typedef struct OneNode
 {
+    struct node class;
     enum TokenType type;
     char* value;
     struct node* child;
@@ -23,6 +25,7 @@ typedef struct OneNode
 
 typedef struct TwoNode
 {
+    struct node class;
     enum TokenType type;
     char* value;
     struct node* left_child;
@@ -36,4 +39,5 @@ struct node* create_unary(Token*, struct node*);
 struct node* create_binary(Token*, struct node*, struct node*);
 struct node* cast_to_unary(struct ZeroNode*, struct node*);
 struct node* cast_to_binary(struct ZeroNode*, struct node*, struct node*);
+void print_node(struct node*, int c);
 void free_node(struct node*);

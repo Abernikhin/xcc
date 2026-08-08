@@ -5,6 +5,7 @@
 
 #include <stdlib.h>
 #include <string.h>
+#include <stdio.h>
 
 
 struct node
@@ -54,12 +55,15 @@ struct node* create_factor(Token* obj) {
 }
 
 struct node* create_unary(Token* obj, struct node* child) {
-
-    struct OneNode* this = (struct OneNode*)create_factor(obj);
+    struct ZeroNode* base = (struct ZeroNode*)create_factor(obj);
+    if(!base) {
+        return NULL;
+    }
+    struct OneNode* this = realloc(base, sizeof(struct OneNode));
     if(!this) {
         return NULL;
     }
-
+    (upcast this)->class = Node_One;
     this->child = child;
 
     return upcast this;
@@ -67,11 +71,16 @@ struct node* create_unary(Token* obj, struct node* child) {
 }
 
 struct node* create_binary(Token* obj, struct node* left_child, struct node* right_child) {
-
-    struct TwoNode* this = (struct TwoNode*)create_factor(obj);
+    struct ZeroNode* base = (struct ZeroNode*)create_factor(obj);
+    if(!base) {
+        return NULL;
+    }
+    struct TwoNode* this = realloc(base, sizeof(struct TwoNode));
     if(!this) {
         return NULL;
     }
+
+    (upcast this)->class = Node_Two;
 
     this->left_child = left_child;
     this->right_child = right_child;
@@ -83,6 +92,7 @@ struct node* create_binary(Token* obj, struct node* left_child, struct node* rig
 struct node* cast_to_unary(struct ZeroNode* obj, struct node* child) {
 
     struct OneNode* this = realloc(obj, sizeof(struct OneNode));
+    (upcast this)->class = Node_One;
     this->child = child;
 
     return upcast this;
@@ -92,11 +102,49 @@ struct node* cast_to_unary(struct ZeroNode* obj, struct node* child) {
 struct node* cast_to_binary(struct ZeroNode* obj, struct node* left_child, struct node* right_child) {
 
     struct TwoNode* this = realloc(obj, sizeof(struct TwoNode));
+    (upcast this)->class = Node_Two;
     this->left_child = left_child;
     this->right_child = right_child;
 
     return upcast this;
 
+}
+
+void print_node(struct node* n, int c) {
+    if (!n) {
+        printf("(null)\n");
+        return;
+    }
+
+    switch (n->class) {
+    case Node_Zero: {
+        struct ZeroNode* this = (struct ZeroNode*)n;
+        printf("ZeroNode(type=%d, value=%s)\n", this->type, this->value ? this->value : "(null)");
+        break;
+    }
+    case Node_One: {
+        struct OneNode* this = (struct OneNode*)n;
+        printf("OneNode(type=%d, value=%s)\n", this->type, this->value ? this->value : "(null)");
+        for(size_t i = 0; i < c; i++) {
+            printf("\t");
+        }
+        print_node(this->child, c+1);
+        break;
+    }
+    case Node_Two: {
+        struct TwoNode* this = (struct TwoNode*)n;
+        printf("TwoNode(type=%d, value=%s)\n", this->type, this->value ? this->value : "(null)");
+        for(size_t i = 0; i < c; i++) {
+            printf("\t");
+        }
+        print_node(this->left_child, c+1);
+        for(size_t i = 0; i < c; i++) {
+            printf("\t");
+        }
+        print_node(this->right_child, c+1);
+        break;
+    }
+    }
 }
 
 void free_node(struct node* n) {
@@ -126,3 +174,5 @@ void free_node(struct node* n) {
     }
     }
 }
+
+

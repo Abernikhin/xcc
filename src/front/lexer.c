@@ -44,7 +44,7 @@ static void append(Lexer* this, Token* obj) {
         return;
     }
 
-    this->tokens = realloc(this->tokens, sizeof(Token) * (this->tokenc + 1));
+    this->tokens = realloc(this->tokens, sizeof(Token*) * (this->tokenc + 1));
     if (!this->tokens) {
         exit(EXIT_FAILURE);
     }
@@ -96,6 +96,13 @@ void tokenize(Lexer* this, char* source) {
             add_name
             i++;
             append(this, create_token(Token_Semicolon, ";"));
+            continue;
+        }
+
+        if(current == '*') {
+            add_name
+            i++;
+            append(this, create_token(Token_Star, "*"));
             continue;
         }
 

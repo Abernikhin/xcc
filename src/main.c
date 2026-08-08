@@ -3,7 +3,7 @@ void front(char*);
 
 int main(int argc, char** argv) {
 
-    front("int const unique num = 568897;");
+    front("static const const int *unique** const num");
 
     return 0;
 
