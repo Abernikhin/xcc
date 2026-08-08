@@ -1,4 +1,5 @@
 
+#include "TokenTypes.h"
 #include "token.h"
 
 #include <stddef.h>
@@ -99,10 +100,52 @@ void tokenize(Lexer* this, char* source) {
             continue;
         }
 
+        if(current == ',') {
+            add_name
+            i++;
+            append(this, create_token(Token_Comma, ","));
+            continue;
+        }
+
         if(current == '*') {
             add_name
             i++;
             append(this, create_token(Token_Star, "*"));
+            continue;
+        }
+
+        if(current == '/') {
+            add_name
+            i++;
+            append(this, create_token(Token_Divide, "/"));
+            continue;
+        }
+
+        if(current == '+') {
+            add_name
+            i++;
+            append(this, create_token(Token_Plus, "+"));
+            continue;
+        }
+
+        if(current == '-') {
+            add_name
+            i++;
+            append(this, create_token(Token_Minus, "-"));
+            continue;
+        }
+
+        if(current == '(') {
+            add_name
+            i++;
+            append(this, create_token(Token_Lparent, "("));
+            continue;
+        }
+
+        if(current == ')') {
+            add_name
+            i++;
+            append(this, create_token(Token_Rparent, ")"));
             continue;
         }
 

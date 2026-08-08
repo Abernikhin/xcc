@@ -119,27 +119,27 @@ void print_node(struct node* n, int c) {
     switch (n->class) {
     case Node_Zero: {
         struct ZeroNode* this = (struct ZeroNode*)n;
-        printf("ZeroNode(type=%d, value=%s)\n", this->type, this->value ? this->value : "(null)");
+        printf("- %s, %d\n", this->value ? this->value : "(null)", this->type);
         break;
     }
     case Node_One: {
         struct OneNode* this = (struct OneNode*)n;
-        printf("OneNode(type=%d, value=%s)\n", this->type, this->value ? this->value : "(null)");
+        printf("- %s, %d\n", this->value ? this->value : "(null)", this->type);
         for(size_t i = 0; i < c; i++) {
-            printf("\t");
+            printf(" ");
         }
         print_node(this->child, c+1);
         break;
     }
     case Node_Two: {
         struct TwoNode* this = (struct TwoNode*)n;
-        printf("TwoNode(type=%d, value=%s)\n", this->type, this->value ? this->value : "(null)");
+        printf("- %s, %d\n", this->value ? this->value : "(null)", this->type);
         for(size_t i = 0; i < c; i++) {
-            printf("\t");
+            printf(" ");
         }
         print_node(this->left_child, c+1);
         for(size_t i = 0; i < c; i++) {
-            printf("\t");
+            printf(" ");
         }
         print_node(this->right_child, c+1);
         break;

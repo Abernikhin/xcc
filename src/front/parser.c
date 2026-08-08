@@ -1,6 +1,7 @@
 
 #include "TokenTypes.h"
 #include "node.h"
+#include "token.h"
 
 #include <stddef.h>
 #include <stdio.h>
@@ -15,7 +16,6 @@ typedef struct parser {
     size_t pos;
     Token* current;
     bool error;
-    char* massage;
 } Parser;
 
 #define self Parser* this
@@ -81,20 +81,16 @@ static struct node* Type(self);
 static struct node* Pointer(self);
 static struct node* Id(self);
 
-static struct node* Declaration(self);
+static struct node* Expr(self);
+static struct node* Term(self);
+static struct node* Factor(self);
+
+void Declaration(self);
 
 void parse(self) {
     while (this->current->type != Token_EOF)
     {
-        struct node* obj = Declaration(this);
-        // if(!this->error) {
-        //     append(this, obj);
-        // } else {
-        //     printf("error\n");
-        //     free_node(obj);
-        //     this->error = false;
-        // }
-        append(this, obj);
+        Declaration(this);
     }
     
 }
@@ -162,11 +158,104 @@ static struct node* Id(self) {
     return obj;
 }
 
-static struct node* Declaration(self) {
-    struct node* type = Storage(this);
-    struct node* name = Pointer(this);
-    Token* t = create_token(Token_Declaration, "Declaration");
-    struct node* obj = create_binary(t, type, name);
+static struct node* Factor(self) {
+    if(this->current->type == Token_Plus || this->current->type == Token_Minus) {
+        Token* op = create_token(this->current->type, this->current->value);
+        advance(this);
+        struct node* child = Factor(this);
+        struct node* obj = create_unary(op, child);
+        free_token(op);
+        return obj;
+    }
+
+    if(this->current->type == Token_Lparent) {
+        advance(this);
+        struct node* obj = Expr(this);
+        if(this->current->type != Token_Rparent) {
+            this->error = true;
+            printf("expected )\n");
+            return obj;
+        }
+        advance(this);
+        return obj;
+    }
+
+    if(this->current->type == Token_Number || this->current->type == Token_Id) {
+        struct node* obj = create_factor(this->current);
+        advance(this);
+        return obj;
+    }
+
+    this->error = true;
+    Token* t = create_token(Token_Number, "0");
+    struct node* obj = create_factor(t);
     free_token(t);
     return obj;
+}
+
+static struct node* Term(self) {
+    struct node* left = Factor(this);
+
+    while(this->current->type == Token_Star || this->current->type == Token_Divide) {
+        Token* op = create_token(this->current->type, this->current->value);
+        advance(this);
+        struct node* right = Factor(this);
+        left = create_binary(op, left, right);
+        free_token(op);
+    }
+
+    return left;
+}
+
+static struct node* Expr(self) {
+    struct node* left = Term(this);
+
+    while(this->current->type == Token_Plus || this->current->type == Token_Minus) {
+        Token* op = create_token(this->current->type, this->current->value);
+        advance(this);
+        struct node* right = Term(this);
+        left = create_binary(op, left, right);
+        free_token(op);
+    }
+
+    return left;
+}
+
+void Declaration(self) {
+    struct node* type = Storage(this);
+    struct node* obj;
+    while(true) {
+        struct node* name = Pointer(this);
+        if(this->current->type == Token_Assign) {
+            advance(this);
+            struct node* value = Expr(this);
+            Token* a = create_token(Token_Assign, "=");
+            Token* t = create_token(Token_Declaration, "declaration");
+            struct node* data = create_binary(a, name, value);
+            obj = create_binary(t, type, data);
+            free_token(t);
+            free_token(a);
+            append(this, obj);
+        } else {
+            Token* t = create_token(Token_Declaration, "declaration");
+            obj = create_binary(t, type, name);
+            free_token(t);
+            append(this, obj);
+        }
+
+        if(this->current->type == Token_Semicolon) {
+            advance(this);
+            break;
+        }
+
+        if(this->current->type == Token_Comma) {
+            advance(this);
+        }
+
+        else {
+            this->error = true;
+            printf("exepted ;");
+            return;
+        }
+    }
 }

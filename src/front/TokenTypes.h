@@ -13,9 +13,16 @@ enum TokenType {
 
     Token_Assign,
 
+    Token_Plus,
+    Token_Minus,
     Token_Star,
+    Token_Divide,
 
     Token_Semicolon,
+    Token_Comma,
+
+    Token_Lparent,
+    Token_Rparent,
 
     Token_Id,
     Token_Number,
