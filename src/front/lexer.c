@@ -1,4 +1,5 @@
 
+#include "TokenTypes.h"
 #include "token.h"
 
 #include <stddef.h>
@@ -44,7 +45,7 @@ static void append(Lexer* this, Token* obj) {
         return;
     }
 
-    this->tokens = realloc(this->tokens, sizeof(Token) * (this->tokenc + 1));
+    this->tokens = realloc(this->tokens, sizeof(Token*) * (this->tokenc + 1));
     if (!this->tokens) {
         exit(EXIT_FAILURE);
     }
@@ -96,6 +97,55 @@ void tokenize(Lexer* this, char* source) {
             add_name
             i++;
             append(this, create_token(Token_Semicolon, ";"));
+            continue;
+        }
+
+        if(current == ',') {
+            add_name
+            i++;
+            append(this, create_token(Token_Comma, ","));
+            continue;
+        }
+
+        if(current == '*') {
+            add_name
+            i++;
+            append(this, create_token(Token_Star, "*"));
+            continue;
+        }
+
+        if(current == '/') {
+            add_name
+            i++;
+            append(this, create_token(Token_Divide, "/"));
+            continue;
+        }
+
+        if(current == '+') {
+            add_name
+            i++;
+            append(this, create_token(Token_Plus, "+"));
+            continue;
+        }
+
+        if(current == '-') {
+            add_name
+            i++;
+            append(this, create_token(Token_Minus, "-"));
+            continue;
+        }
+
+        if(current == '(') {
+            add_name
+            i++;
+            append(this, create_token(Token_Lparent, "("));
+            continue;
+        }
+
+        if(current == ')') {
+            add_name
+            i++;
+            append(this, create_token(Token_Rparent, ")"));
             continue;
         }
 

@@ -1,4 +1,7 @@
 
+#ifndef __TOKEN_H__
+#define __TOKEN_H__
+
 #include "TokenTypes.h"
 
 typedef struct token {
@@ -13,3 +16,5 @@ Token* copy_token(Token*);
 void free_token(Token*);
 void print_token(Token*);
 enum TokenType set_type(char*);
+
+#endif // __TOKEN_H__
