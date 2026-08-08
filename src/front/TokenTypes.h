@@ -1,4 +1,7 @@
 
+#ifndef __TokenTypes__
+#define __TokenTypes__
+
 enum TokenType {
 
     Token_EOF,
@@ -16,3 +19,5 @@ enum TokenType {
     Token_Number,
 
 };
+
+#endif // __TokenTypes__

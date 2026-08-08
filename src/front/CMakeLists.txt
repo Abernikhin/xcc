@@ -1,1 +1,1 @@
-add_library(front STATIC front.c lexer.c token.c)
+add_library(front STATIC front.c lexer.c token.c node.c)
