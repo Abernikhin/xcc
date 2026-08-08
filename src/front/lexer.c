@@ -30,19 +30,26 @@ void free_lexer(Lexer* this) {
         free_token(this->tokens[i]);
     }
 
+    free(this->tokens);
+
     free(this);
 
 }
 
-static append(Lexer* this, Token* obj) {
+static void append(Lexer* this, Token* obj) {
     if(this->tokenc == 0) {
         this->tokens = malloc(sizeof(Token*));
         this->tokens[0] = obj;
         this->tokenc++;
+        return;
     }
 
-    this->tokens = realloc(this->tokens, this->tokenc++);
-    this->tokens[this->tokenc-1] = obj;
+    this->tokens = realloc(this->tokens, sizeof(Token) * (this->tokenc + 1));
+    if (!this->tokens) {
+        exit(EXIT_FAILURE);
+    }
+    this->tokens[this->tokenc] = obj;
+    this->tokenc++;
 }
 
 #define add_name if(strlen(buffer) > 0) {\
@@ -109,4 +116,10 @@ void tokenize(Lexer* this, char* source) {
     add_name
     append(this, create_token(Token_EOF, ""));
 
+}
+
+void print_tokens(Lexer *this) {
+    for(size_t i = 0; i < this->tokenc; i++) {
+        print_token(this->tokens[i]);
+    }
 }

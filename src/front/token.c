@@ -43,7 +43,7 @@ enum TokenType set_type(char* s) {
 
     for(size_t i = 0; i < strlen(s); i++) {
         if(!isdigit(s[i])) break;
-        if(i == strlen(s)) return Token_Number;
+        if(i+1 == strlen(s)) return Token_Number;
     }
 
     for(char i = 0; i < 2; i++) {
@@ -71,7 +71,7 @@ struct token* create_token(enum TokenType t, char* v) {
     if(!this) return NULL;
     
     this->type = t;
-    this->value = stdup(v);
+    this->value = strdup(v);
 
     return this;
 
@@ -90,7 +90,7 @@ struct token* copy_token(struct token* this) {
     if(!copy) return NULL;
     
     copy->type = this->type;
-    copy->value = stdup(this->value);
+    copy->value = strdup(this->value);
 
     return copy;
 

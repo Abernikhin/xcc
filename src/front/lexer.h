@@ -8,3 +8,4 @@ typedef struct lexer {
 Lexer* create_lexer();
 void free_lexer(Lexer*);
 void tokenize(Lexer*, char*);
+void print_tokens(Lexer*);
