@@ -32,12 +32,17 @@ static char* Types[] = {
     "long",
     "float",
     "double",
-    "bool"
+    "bool",
+    "void"
 };
 
 static char* Pointer[] = {
     "const",
     "unique"
+};
+
+static char* Keyword[] = {
+    "return"
 };
 
 enum TokenType set_type(char* s) {
@@ -55,12 +60,16 @@ enum TokenType set_type(char* s) {
         if(strcmp(Modifier[i], s) == 0) return Token_Modifier;
     }
 
-    for(char i = 0; i < 7; i++) {
+    for(char i = 0; i < 8; i++) {
         if(strcmp(Types[i], s) == 0) return Token_Type;
     }
 
     for(char i = 0; i < 2; i++) {
         if(strcmp(Pointer[i], s) == 0) return Token_Pointer;
+    }
+
+    for(char i = 0; i < 1; i++) {
+        if(strcmp(Keyword[i], s) == 0) return Token_Keyword;
     }
 
     return Token_Id;

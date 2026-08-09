@@ -10,6 +10,7 @@ enum TokenType {
     Token_Modifier,
     Token_Type,
     Token_Pointer,
+    Token_Keyword,
 
     Token_Assign,
 
@@ -32,7 +33,8 @@ enum TokenType {
     Token_Declaration,
     Token_Argumant,
     Token_Function,
-    Token_Call
+    Token_Call,
+    Token_Body,
 
 };
 
