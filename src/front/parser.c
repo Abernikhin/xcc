@@ -140,6 +140,9 @@ static struct node* Pointer(self) {
     if(this->current->type == Token_Pointer || this->current->type == Token_Star || strcmp(this->current->value, "const") == 0) {
         struct node* obj = create_factor(this->current);
         advance(this);
+        if(this->current->type == Token_Rparent || this->current->type == Token_Comma) {
+            return obj;
+        }
         obj = cast_to_unary((zeroNode*)obj, Pointer(this));
         ((unaryNode*)obj)->type = Token_Pointer;
         return obj;
@@ -236,6 +239,26 @@ void Declaration(self) {
             free_token(t);
             free_token(a);
             append(this, obj);
+        } else if (this->current->type == Token_Lparent) {
+            advance(this);
+            Token* a = create_token(Token_Function, "function");
+            Token* t = create_token(Token_Argumant, "argumants");
+            Token* d = create_token(Token_Declaration, "declaration");
+            struct node* args = create_nary(t, 0, NULL);
+            while(this->current->type != Token_Rparent) {
+                append_many_child(args, create_binary(d, Type(this), Pointer(this)));
+                if(this->current->type == Token_Comma) advance(this);
+            }
+            obj = create_nary(a, 0, NULL);
+            append_many_child(obj, type);
+            append_many_child(obj, name);
+            append_many_child(obj, args);
+
+            free_token(t);
+            free_token(a);
+            free_token(d);
+            append(this, obj);
+            advance(this);
         } else {
             Token* t = create_token(Token_Declaration, "declaration");
             obj = create_binary(t, type, name);

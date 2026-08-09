@@ -27,7 +27,9 @@ enum TokenType {
     Token_Id,
     Token_Number,
 
-    Token_Declaration
+    Token_Declaration,
+    Token_Argumant,
+    Token_Function
 
 };
 
