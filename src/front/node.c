@@ -208,7 +208,7 @@ void print_node(struct node* n, int c) {
         struct OneNode* this = (struct OneNode*)n;
         printf("- %s, %d\n", this->value ? this->value : "(null)", this->type);
         for(size_t i = 0; i < c; i++) {
-            printf(" ");
+            printf("  ");
         }
         print_node(this->child, c+1);
         break;
@@ -217,11 +217,11 @@ void print_node(struct node* n, int c) {
         struct TwoNode* this = (struct TwoNode*)n;
         printf("- %s, %d\n", this->value ? this->value : "(null)", this->type);
         for(size_t i = 0; i < c; i++) {
-            printf(" ");
+            printf("  ");
         }
         print_node(this->left_child, c+1);
         for(size_t i = 0; i < c; i++) {
-            printf(" ");
+            printf("  ");
         }
         print_node(this->right_child, c+1);
         break;
@@ -231,7 +231,7 @@ void print_node(struct node* n, int c) {
         printf("- %s, %d (%zu children)\n", this->value ? this->value : "(null)", this->type, this->child_count);
         for (size_t idx = 0; idx < this->child_count; idx++) {
             for(size_t i = 0; i < c; i++) {
-                printf(" ");
+                printf("  ");
             }
             print_node(this->children[idx], c+1);
         }

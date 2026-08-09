@@ -400,7 +400,45 @@ void Function(self, struct node* body) {
             obj = cast_to_unary((zeroNode*)obj, Expr(this));
             append_many_child(body, obj);
             return;
+        } else if(strcmp(this->current->value, "loop") == 0) {
+            struct node* obj = create_nary(this->current, 0, NULL);
+            advance(this);
+            if(this->current->type == Token_Begin) {
+                advance(this);
+
+                while(this->current->type != Token_End) {
+                    Function(this, obj);
+                    if(this->current->type == Token_Semicolon) {
+                        advance(this);
+                        continue;
+                    }
+                }
+                advance(this);
+                append_many_child(body, obj);
+            } else {
+                this->error = true;
+                printf("expected { after loop\n");
+            }
+            return;
+        } else if(strcmp(this->current->value, "break") == 0) {
+            struct node* obj = create_factor(this->current);
+            advance(this);
+            if(this->current->type != Token_Semicolon) {
+                this->error = true;
+                printf("exepted ; after break");
+            }
+            append_many_child(body, obj);
+        } else if(strcmp(this->current->value, "continue") == 0) {
+            struct node* obj = create_factor(this->current);
+            advance(this);
+            if(this->current->type != Token_Semicolon) {
+                this->error = true;
+                printf("exepted ; after continue");
+            }
+            append_many_child(body, obj);
         }
+
+        return;
     }
 
     if(
@@ -432,7 +470,6 @@ void Function(self, struct node* body) {
             }
 
             if(this->current->type == Token_Semicolon) {
-                advance(this);
                 break;
             }
 
@@ -445,6 +482,11 @@ void Function(self, struct node* body) {
                 printf("exepted in function ;\n");
             }
         }
+    }
+
+    if(this->current->type == Token_Semicolon) {
+        advance(this);
+        return;
     }
 
     append_many_child(body, Expr(this));
