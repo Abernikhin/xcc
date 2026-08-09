@@ -457,7 +457,7 @@ void Function(self, struct node* body) {
                 ((binaryNode*)(((binaryNode*)obj)->left_child))->type != Token_Less
             ) {
                 this->error = true;
-                printf("condition mast return bool. last operation must be == != <= >= < > ! && || !\n");
+                printf("at if: condition mast return bool. last operation must be == != <= >= < > ! && || !\n");
             }
             if(this->current->type == Token_Begin) {
                 advance(this);
@@ -517,7 +517,7 @@ void Function(self, struct node* body) {
                 ((binaryNode*)(((binaryNode*)obj)->left_child))->type != Token_Less
             ) {
                 this->error = true;
-                printf("condition mast return bool. last operation must be == != <= >= < > ! && || !\n");
+                printf("at while: condition mast return bool. last operation must be == != <= >= < > ! && || !\n");
             }
             if(this->current->type == Token_Begin) {
                 advance(this);
@@ -584,6 +584,95 @@ void Function(self, struct node* body) {
                 append_many_child(body, obj);
             }
             free_token(b);
+            return;
+        } else if(strcmp(this->current->value, "switch") == 0) {
+            struct node* obj = create_factor(this->current);
+            advance(this);
+            if(this->current->type != Token_Lparent) {
+                this->error = true;
+                printf("expected ( after switch\n");
+            }
+            advance(this);
+            struct node* cond = Expr(this);
+            if(this->current->type != Token_Rparent) {
+                this->error = true;
+                printf("expected ) after switch condition\n");
+            } else {
+                advance(this);
+            }
+
+            if(this->current->type != Token_Begin) {
+                this->error = true;
+                printf("expected { after switch(condition)\n");
+            }
+            advance(this);
+
+            obj = cast_to_nary((zeroNode*)obj, 0, NULL);
+            append_many_child(obj, cond);
+
+            Token* caseToken = create_token(Token_Keyword, "case");
+            Token* defaultToken = create_token(Token_Keyword, "default");
+
+            while(this->current->type != Token_End) {
+                if(this->current->type == Token_Keyword && strcmp(this->current->value, "case") == 0) {
+                    advance(this);
+                    struct node* value = Expr(this);
+                    if(this->current->type != Token_Colon) {
+                        this->error = true;
+                        printf("expected : after case expression\n");
+                    } else {
+                        advance(this);
+                    }
+                    struct node* caseNode = create_nary(caseToken, 0, NULL);
+                    append_many_child(caseNode, value);
+                    while(!(
+                        (this->current->type == Token_Keyword && strcmp(this->current->value, "default") == 0) ||
+                        (this->current->type == Token_Keyword && strcmp(this->current->value, "case") == 0) ||
+                        this->current->type == Token_End
+                    )) {
+                        if(this->current->type == Token_Semicolon) {
+                            advance(this);
+                            continue;
+                        }
+                        Function(this, caseNode);
+                    }
+                    append_many_child(obj, caseNode);
+                    continue;
+                }
+
+                if(this->current->type == Token_Keyword && strcmp(this->current->value, "default") == 0) {
+                    advance(this);
+                    if(this->current->type != Token_Colon) {
+                        this->error = true;
+                        printf("expected : after default\n");
+                    } else {
+                        advance(this);
+                    }
+                    struct node* caseNode = create_nary(defaultToken, 0, NULL);
+                    while(!(
+                        (this->current->type == Token_Keyword && strcmp(this->current->value, "default") == 0) ||
+                        (this->current->type == Token_Keyword && strcmp(this->current->value, "case") == 0) ||
+                        this->current->type == Token_End
+                    )) {
+                        if(this->current->type == Token_Semicolon) {
+                            advance(this);
+                            continue;
+                        }
+                        Function(this, caseNode);
+                    }
+                    append_many_child(obj, caseNode);
+                    continue;
+                }
+
+                this->error = true;
+                printf("expected case or default in switch body\n");
+                break;
+            }
+
+            free_token(caseToken);
+            free_token(defaultToken);
+            advance(this);
+            append_many_child(body, obj);
             return;
         } else if(strcmp(this->current->value, "for") == 0) {
             struct node* obj = create_factor(this->current);
@@ -652,7 +741,6 @@ void Function(self, struct node* body) {
                 advance(this);
             }
             if(this->current->type == Token_Rparent) advance(this);
-            print_token(this->current);
 
             obj = cast_to_nary((zeroNode*)obj, 0, NULL);
             append_many_child(obj, init);

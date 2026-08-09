@@ -49,6 +49,7 @@ enum TokenType {
 
     Token_Semicolon,
     Token_Comma,
+    Token_Colon,
 
     Token_Lparent,
     Token_Rparent,

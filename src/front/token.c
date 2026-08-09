@@ -47,6 +47,9 @@ static char* Keyword[] = {
     "while",
     "for",
     "do",
+    "switch",
+    "case",
+    "default",
     "break",
     "continue",
     "if",
@@ -68,7 +71,7 @@ enum TokenType set_type(char* s) {
         if(strcmp(Modifier[i], s) == 0) return Token_Modifier;
     }
 
-    for(char i = 0; i < 9; i++) {
+    for(char i = 0; i < 12; i++) {
         if(strcmp(Keyword[i], s) == 0) return Token_Keyword;
     }
 

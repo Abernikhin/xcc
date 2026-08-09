@@ -107,6 +107,13 @@ void tokenize(Lexer* this, char* source) {
             continue;
         }
 
+        if(current == ':') {
+            add_name
+            i++;
+            append(this, create_token(Token_Colon, ":"));
+            continue;
+        }
+
         if(current == '*') {
             add_name
             if(source[i + 1] == '=') {
