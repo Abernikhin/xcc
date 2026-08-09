@@ -18,6 +18,7 @@ struct token
 static char* Storage[] = {
     "auto",
     "static",
+    "extern"
 };
 
 static char* Modifier[] = {
@@ -46,7 +47,7 @@ enum TokenType set_type(char* s) {
         if(i+1 == strlen(s)) return Token_Number;
     }
 
-    for(char i = 0; i < 2; i++) {
+    for(char i = 0; i < 3; i++) {
         if(strcmp(Storage[i], s) == 0) return Token_Storage;
     }
 

@@ -23,13 +23,16 @@ enum TokenType {
 
     Token_Lparent,
     Token_Rparent,
+    Token_Begin,
+    Token_End,
 
     Token_Id,
     Token_Number,
 
     Token_Declaration,
     Token_Argumant,
-    Token_Function
+    Token_Function,
+    Token_Call
 
 };
 

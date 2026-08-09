@@ -149,6 +149,20 @@ void tokenize(Lexer* this, char* source) {
             continue;
         }
 
+        if(current == '{') {
+            add_name
+            i++;
+            append(this, create_token(Token_Begin, "{"));
+            continue;
+        }
+
+        if(current == '}') {
+            add_name
+            i++;
+            append(this, create_token(Token_End, "}"));
+            continue;
+        }
+
         if(current == '=') {
             add_name
             i++;

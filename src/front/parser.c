@@ -80,6 +80,7 @@ static struct node* Type(self);
 
 static struct node* Pointer(self);
 static struct node* Id(self);
+static struct node* Call(self, struct node* callee);
 
 static struct node* Expr(self);
 static struct node* Term(self);
@@ -183,16 +184,35 @@ static struct node* Factor(self) {
         return obj;
     }
 
-    if(this->current->type == Token_Number || this->current->type == Token_Id) {
-        struct node* obj = create_factor(this->current);
+    if(this->current->type == Token_Id) {
+        Token* a = create_token(Token_Call, "()");
+        Token* t = create_token(Token_Argumant, "argumants");
+        struct node* name = create_factor(this->current);
         advance(this);
+        struct node* obj;
+        if(this->current->type == Token_Lparent) {
+            advance(this);
+            struct node* args = create_nary(t, 0, NULL);
+            while(this->current->type != Token_Rparent) {
+                append_many_child(args, Expr(this));
+                if(this->current->type == Token_Comma) {
+                    advance(this);
+                    continue;
+                }
+                break;
+            }
+            advance(this);
+            obj = create_binary(a, name, args);
+        } else {
+            obj = name;
+        }
+        free_token(a);
+        free_token(t);
         return obj;
     }
 
-    this->error = true;
-    Token* t = create_token(Token_Number, "0");
-    struct node* obj = create_factor(t);
-    free_token(t);
+    struct node* obj = create_factor(this->current);
+    advance(this);
     return obj;
 }
 
