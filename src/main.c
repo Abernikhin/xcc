@@ -9,11 +9,6 @@ char* load_file(char*);
 
 int main(int argc, char** argv) {
 
-    if(argc < 2) {
-        front("int a = 1 + 2;");
-        return 0;
-    }
-
     char* source;
 
     for(size_t i = 1; i < argc; i++) {

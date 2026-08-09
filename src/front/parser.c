@@ -131,7 +131,7 @@ static struct node* Modifier(self) {
 static struct node* Type(self) {
     if(this->current->type != Token_Type) {
         this->error = true;
-        printf("unexepted type");
+        printf("unexepted type %s\n", this->current->value);
     }
 
     struct node* obj = create_factor(this->current);
@@ -157,7 +157,7 @@ static struct node* Pointer(self) {
 static struct node* Id(self) {
     if(this->current->type != Token_Id) {
         this->error = true;
-        printf("unexepted name");
+        printf("unexepted name %s\n", this->current->value);
     }
 
     struct node* obj = create_factor(this->current);
@@ -338,7 +338,7 @@ static void Declaration(self) {
             if(this->current->type == Token_Begin) {
                 if(capaicty > 0) {
                     this->error = true;
-                    printf("unexepted {");
+                    printf("unexepted {\n");
                 }
                 struct node* body = create_nary(b, 0, NULL);
                 advance(this);
