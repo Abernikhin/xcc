@@ -83,8 +83,19 @@ static struct node* Id(self);
 static struct node* Call(self, struct node* callee);
 
 static struct node* Expr(self);
-static struct node* Term(self);
-static struct node* Factor(self);
+static struct node* Assignment(self);
+static struct node* LogicalOr(self);
+static struct node* LogicalAnd(self);
+static struct node* BitwiseOr(self);
+static struct node* BitwiseXor(self);
+static struct node* BitwiseAnd(self);
+static struct node* Equality(self);
+static struct node* Relational(self);
+static struct node* Shift(self);
+static struct node* Additive(self);
+static struct node* Multiplicative(self);
+static struct node* Unary(self);
+static struct node* Primary(self);
 
 void Function(self, struct node* body);
 static void Declaration(self);
@@ -165,16 +176,7 @@ static struct node* Id(self) {
     return obj;
 }
 
-static struct node* Factor(self) {
-    if(this->current->type == Token_Plus || this->current->type == Token_Minus) {
-        Token* op = create_token(this->current->type, this->current->value);
-        advance(this);
-        struct node* child = Factor(this);
-        struct node* obj = create_unary(op, child);
-        free_token(op);
-        return obj;
-    }
-
+static struct node* Primary(self) {
     if(this->current->type == Token_Lparent) {
         advance(this);
         struct node* obj = Expr(this);
@@ -219,13 +221,166 @@ static struct node* Factor(self) {
     return obj;
 }
 
-static struct node* Term(self) {
-    struct node* left = Factor(this);
-
-    while(this->current->type == Token_Star || this->current->type == Token_Divide) {
+static struct node* Unary(self) {
+    if(this->current->type == Token_Plus || this->current->type == Token_Minus || this->current->type == Token_LogicalNot || this->current->type == Token_BitNot || this->current->type == Token_Inc || this->current->type == Token_Dec) {
         Token* op = create_token(this->current->type, this->current->value);
         advance(this);
-        struct node* right = Factor(this);
+        struct node* child = Unary(this);
+        struct node* obj = create_unary(op, child);
+        free_token(op);
+        return obj;
+    }
+
+    return Primary(this);
+}
+
+static struct node* Multiplicative(self) {
+    struct node* left = Unary(this);
+
+    while(this->current->type == Token_Star || this->current->type == Token_Divide || this->current->type == Token_Modulo) {
+        Token* op = create_token(this->current->type, this->current->value);
+        advance(this);
+        struct node* right = Unary(this);
+        left = create_binary(op, left, right);
+        free_token(op);
+    }
+
+    return left;
+}
+
+static struct node* Additive(self) {
+    struct node* left = Multiplicative(this);
+
+    while(this->current->type == Token_Plus || this->current->type == Token_Minus) {
+        Token* op = create_token(this->current->type, this->current->value);
+        advance(this);
+        struct node* right = Multiplicative(this);
+        left = create_binary(op, left, right);
+        free_token(op);
+    }
+
+    return left;
+}
+
+static struct node* Shift(self) {
+    struct node* left = Additive(this);
+
+    while(this->current->type == Token_LeftShift || this->current->type == Token_RightShift) {
+        Token* op = create_token(this->current->type, this->current->value);
+        advance(this);
+        struct node* right = Additive(this);
+        left = create_binary(op, left, right);
+        free_token(op);
+    }
+
+    return left;
+}
+
+static struct node* Relational(self) {
+    struct node* left = Shift(this);
+
+    while(this->current->type == Token_Less || this->current->type == Token_Greater || this->current->type == Token_LessEqual || this->current->type == Token_GreaterEqual) {
+        Token* op = create_token(this->current->type, this->current->value);
+        advance(this);
+        struct node* right = Shift(this);
+        left = create_binary(op, left, right);
+        free_token(op);
+    }
+
+    return left;
+}
+
+static struct node* Equality(self) {
+    struct node* left = Relational(this);
+
+    while(this->current->type == Token_Equal || this->current->type == Token_NotEqual) {
+        Token* op = create_token(this->current->type, this->current->value);
+        advance(this);
+        struct node* right = Relational(this);
+        left = create_binary(op, left, right);
+        free_token(op);
+    }
+
+    return left;
+}
+
+static struct node* BitwiseAnd(self) {
+    struct node* left = Equality(this);
+
+    while(this->current->type == Token_BitAnd) {
+        Token* op = create_token(this->current->type, this->current->value);
+        advance(this);
+        struct node* right = Equality(this);
+        left = create_binary(op, left, right);
+        free_token(op);
+    }
+
+    return left;
+}
+
+static struct node* BitwiseXor(self) {
+    struct node* left = BitwiseAnd(this);
+
+    while(this->current->type == Token_BitXor) {
+        Token* op = create_token(this->current->type, this->current->value);
+        advance(this);
+        struct node* right = BitwiseAnd(this);
+        left = create_binary(op, left, right);
+        free_token(op);
+    }
+
+    return left;
+}
+
+static struct node* BitwiseOr(self) {
+    struct node* left = BitwiseXor(this);
+
+    while(this->current->type == Token_BitOr) {
+        Token* op = create_token(this->current->type, this->current->value);
+        advance(this);
+        struct node* right = BitwiseXor(this);
+        left = create_binary(op, left, right);
+        free_token(op);
+    }
+
+    return left;
+}
+
+static struct node* LogicalAnd(self) {
+    struct node* left = BitwiseOr(this);
+
+    while(this->current->type == Token_LogicalAnd) {
+        Token* op = create_token(this->current->type, this->current->value);
+        advance(this);
+        struct node* right = BitwiseOr(this);
+        left = create_binary(op, left, right);
+        free_token(op);
+    }
+
+    return left;
+}
+
+static struct node* LogicalOr(self) {
+    struct node* left = LogicalAnd(this);
+
+    while(this->current->type == Token_LogicalOr) {
+        Token* op = create_token(this->current->type, this->current->value);
+        advance(this);
+        struct node* right = LogicalAnd(this);
+        left = create_binary(op, left, right);
+        free_token(op);
+    }
+
+    return left;
+}
+
+static struct node* Assignment(self) {
+    struct node* left = LogicalOr(this);
+
+    if(this->current->type == Token_Assign || this->current->type == Token_AddAssign || this->current->type == Token_SubAssign || this->current->type == Token_MulAssign || this->current->type == Token_DivAssign || this->current->type == Token_ModAssign || this->current->type == Token_AndAssign || this->current->type == Token_OrAssign || this->current->type == Token_XorAssign || this->current->type == Token_LeftShiftAssign || this->current->type == Token_RightShiftAssign) {
+        Token* op = create_token(this->current->type, this->current->value);
+        advance(this);
+        struct node* right = Assignment(this);
         left = create_binary(op, left, right);
         free_token(op);
     }
@@ -234,17 +389,7 @@ static struct node* Term(self) {
 }
 
 static struct node* Expr(self) {
-    struct node* left = Term(this);
-
-    while(this->current->type == Token_Plus || this->current->type == Token_Minus) {
-        Token* op = create_token(this->current->type, this->current->value);
-        advance(this);
-        struct node* right = Term(this);
-        left = create_binary(op, left, right);
-        free_token(op);
-    }
-
-    return left;
+    return Assignment(this);
 }
 
 void Function(self, struct node* body) {
@@ -258,43 +403,51 @@ void Function(self, struct node* body) {
         }
     }
 
-    struct node* type = Storage(this);
-    struct node* obj;
+    if(
+        this->current->type == Token_Storage ||
+        this->current->type == Token_Modifier ||
+        this->current->type == Token_Type
+    ) {
+        struct node* type = Storage(this);
+        struct node* obj;
 
-    while(true) {
-        struct node* name = Pointer(this);
+        while(true) {
+            struct node* name = Pointer(this);
 
-        if(this->current->type == Token_Assign) {
-            advance(this);
-            struct node* value = Expr(this);
-            Token* a = create_token(Token_Assign, "=");
-            Token* t = create_token(Token_Declaration, "declaration");
-            struct node* data = create_binary(a, name, value);
-            obj = create_binary(t, type, data);
-            free_token(t);
-            free_token(a);
-            append_many_child(body, obj);
-        } else {
-            Token* t = create_token(Token_Declaration, "declaration");
-            obj = create_binary(t, type, name);
-            free_token(t);
-            append_many_child(body, obj);
-        }
+            if(this->current->type == Token_Assign) {
+                advance(this);
+                struct node* value = Expr(this);
+                Token* a = create_token(Token_Assign, "=");
+                Token* t = create_token(Token_Declaration, "declaration");
+                struct node* data = create_binary(a, name, value);
+                obj = create_binary(t, type, data);
+                free_token(t);
+                free_token(a);
+                append_many_child(body, obj);
+            } else {
+                Token* t = create_token(Token_Declaration, "declaration");
+                obj = create_binary(t, type, name);
+                free_token(t);
+                append_many_child(body, obj);
+            }
 
-        if(this->current->type == Token_Semicolon) {
-            advance(this);
-            break;
-        }
+            if(this->current->type == Token_Semicolon) {
+                advance(this);
+                break;
+            }
 
-        else if(this->current->type == Token_Comma) {
-            advance(this);
-        }
+            else if(this->current->type == Token_Comma) {
+                advance(this);
+            }
 
-        else {
-            this->error = true;
-            printf("exepted in function ;\n");
+            else {
+                this->error = true;
+                printf("exepted in function ;\n");
+            }
         }
     }
+
+    append_many_child(body, Expr(this));
 }
 
 static void Declaration(self) {

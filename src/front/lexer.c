@@ -109,29 +109,67 @@ void tokenize(Lexer* this, char* source) {
 
         if(current == '*') {
             add_name
-            i++;
-            append(this, create_token(Token_Star, "*"));
+            if(source[i + 1] == '=') {
+                i += 2;
+                append(this, create_token(Token_MulAssign, "*="));
+            } else {
+                i++;
+                append(this, create_token(Token_Star, "*"));
+            }
             continue;
         }
 
         if(current == '/') {
             add_name
-            i++;
-            append(this, create_token(Token_Divide, "/"));
+            if(source[i + 1] == '=') {
+                i += 2;
+                append(this, create_token(Token_DivAssign, "/="));
+            } else {
+                i++;
+                append(this, create_token(Token_Divide, "/"));
+            }
+            continue;
+        }
+
+        if(current == '%') {
+            add_name
+            if(source[i + 1] == '=') {
+                i += 2;
+                append(this, create_token(Token_ModAssign, "%="));
+            } else {
+                i++;
+                append(this, create_token(Token_Modulo, "%"));
+            }
             continue;
         }
 
         if(current == '+') {
             add_name
-            i++;
-            append(this, create_token(Token_Plus, "+"));
+            if(source[i + 1] == '=') {
+                i += 2;
+                append(this, create_token(Token_AddAssign, "+="));
+            } else if(source[i + 1] == '+') {
+                i += 2;
+                append(this, create_token(Token_Inc, "++"));
+            } else {
+                i++;
+                append(this, create_token(Token_Plus, "+"));
+            }
             continue;
         }
 
         if(current == '-') {
             add_name
-            i++;
-            append(this, create_token(Token_Minus, "-"));
+            if(source[i + 1] == '=') {
+                i += 2;
+                append(this, create_token(Token_SubAssign, "-="));
+            } else if(source[i + 1] == '-') {
+                i += 2;
+                append(this, create_token(Token_Dec, "--"));
+            } else {
+                i++;
+                append(this, create_token(Token_Minus, "-"));
+            }
             continue;
         }
 
@@ -165,8 +203,104 @@ void tokenize(Lexer* this, char* source) {
 
         if(current == '=') {
             add_name
+            if(source[i + 1] == '=') {
+                i += 2;
+                append(this, create_token(Token_Equal, "=="));
+            } else {
+                i++;
+                append(this, create_token(Token_Assign, "="));
+            }
+            continue;
+        }
+
+        if(current == '!') {
+            add_name
+            if(source[i + 1] == '=') {
+                i += 2;
+                append(this, create_token(Token_NotEqual, "!="));
+            } else {
+                i++;
+                append(this, create_token(Token_LogicalNot, "!"));
+            }
+            continue;
+        }
+
+        if(current == '<') {
+            add_name
+            if(source[i + 1] == '=') {
+                i += 2;
+                append(this, create_token(Token_LessEqual, "<="));
+            } else if(source[i + 1] == '<') {
+                i += 2;
+                append(this, create_token(Token_LeftShift, "<<"));
+            } else {
+                i++;
+                append(this, create_token(Token_Less, "<"));
+            }
+            continue;
+        }
+
+        if(current == '>') {
+            add_name
+            if(source[i + 1] == '=') {
+                i += 2;
+                append(this, create_token(Token_GreaterEqual, ">="));
+            } else if(source[i + 1] == '>') {
+                i += 2;
+                append(this, create_token(Token_RightShift, ">>"));
+            } else {
+                i++;
+                append(this, create_token(Token_Greater, ">"));
+            }
+            continue;
+        }
+
+        if(current == '&') {
+            add_name
+            if(source[i + 1] == '&') {
+                i += 2;
+                append(this, create_token(Token_LogicalAnd, "&&"));
+            } else if(source[i + 1] == '=') {
+                i += 2;
+                append(this, create_token(Token_AndAssign, "&="));
+            } else {
+                i++;
+                append(this, create_token(Token_BitAnd, "&"));
+            }
+            continue;
+        }
+
+        if(current == '|') {
+            add_name
+            if(source[i + 1] == '|') {
+                i += 2;
+                append(this, create_token(Token_LogicalOr, "||"));
+            } else if(source[i + 1] == '=') {
+                i += 2;
+                append(this, create_token(Token_OrAssign, "|="));
+            } else {
+                i++;
+                append(this, create_token(Token_BitOr, "|"));
+            }
+            continue;
+        }
+
+        if(current == '^') {
+            add_name
+            if(source[i + 1] == '=') {
+                i += 2;
+                append(this, create_token(Token_XorAssign, "^="));
+            } else {
+                i++;
+                append(this, create_token(Token_BitXor, "^"));
+            }
+            continue;
+        }
+
+        if(current == '~') {
+            add_name
             i++;
-            append(this, create_token(Token_Assign, "="));
+            append(this, create_token(Token_BitNot, "~"));
             continue;
         }
         
