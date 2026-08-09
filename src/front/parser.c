@@ -140,11 +140,11 @@ static struct node* Pointer(self) {
     if(this->current->type == Token_Pointer || this->current->type == Token_Star || strcmp(this->current->value, "const") == 0) {
         struct node* obj = create_factor(this->current);
         advance(this);
+        ((unaryNode*)obj)->type = Token_Pointer;
         if(this->current->type == Token_Rparent || this->current->type == Token_Comma) {
             return obj;
         }
         obj = cast_to_unary((zeroNode*)obj, Pointer(this));
-        ((unaryNode*)obj)->type = Token_Pointer;
         return obj;
     }
 
@@ -246,7 +246,10 @@ void Declaration(self) {
             Token* d = create_token(Token_Declaration, "declaration");
             struct node* args = create_nary(t, 0, NULL);
             while(this->current->type != Token_Rparent) {
-                append_many_child(args, create_binary(d, Type(this), Pointer(this)));
+                struct node* atype = Modifier(this);
+                struct node* aname = Pointer(this);
+                struct node* arg = create_binary(d, atype, aname);
+                append_many_child(args, arg);
                 if(this->current->type == Token_Comma) advance(this);
             }
             obj = create_nary(a, 0, NULL);
