@@ -86,16 +86,13 @@ static struct node* Expr(self);
 static struct node* Term(self);
 static struct node* Factor(self);
 
-static struct node* Function(self);
+void Function(self, struct node* body);
 static void Declaration(self);
 
 void parse(self) {
     while (this->current->type != Token_EOF)
     {
         Declaration(this);
-    }
-    if(this->error) {
-        exit(EXIT_FAILURE);
     }
     
 }
@@ -134,6 +131,7 @@ static struct node* Modifier(self) {
 static struct node* Type(self) {
     if(this->current->type != Token_Type) {
         this->error = true;
+        printf("unexepted type");
     }
 
     struct node* obj = create_factor(this->current);
@@ -159,6 +157,7 @@ static struct node* Pointer(self) {
 static struct node* Id(self) {
     if(this->current->type != Token_Id) {
         this->error = true;
+        printf("unexepted name");
     }
 
     struct node* obj = create_factor(this->current);
@@ -248,13 +247,52 @@ static struct node* Expr(self) {
     return left;
 }
 
-static struct node* Function(self) {
+void Function(self, struct node* body) {
     if(this->current->type == Token_Keyword) {
         if(strcmp(this->current->value, "return") == 0) {
             struct node* obj = create_factor(this->current);
             advance(this);
             obj = cast_to_unary((zeroNode*)obj, Expr(this));
-            return obj;
+            append_many_child(body, obj);
+            return;
+        }
+    }
+
+    struct node* type = Storage(this);
+    struct node* obj;
+
+    while(true) {
+        struct node* name = Pointer(this);
+
+        if(this->current->type == Token_Assign) {
+            advance(this);
+            struct node* value = Expr(this);
+            Token* a = create_token(Token_Assign, "=");
+            Token* t = create_token(Token_Declaration, "declaration");
+            struct node* data = create_binary(a, name, value);
+            obj = create_binary(t, type, data);
+            free_token(t);
+            free_token(a);
+            append_many_child(body, obj);
+        } else {
+            Token* t = create_token(Token_Declaration, "declaration");
+            obj = create_binary(t, type, name);
+            free_token(t);
+            append_many_child(body, obj);
+        }
+
+        if(this->current->type == Token_Semicolon) {
+            advance(this);
+            break;
+        }
+
+        else if(this->current->type == Token_Comma) {
+            advance(this);
+        }
+
+        else {
+            this->error = true;
+            printf("exepted in function ;\n");
         }
     }
 }
@@ -298,20 +336,19 @@ static void Declaration(self) {
             append_many_child(obj, name);
             append_many_child(obj, args);
             if(this->current->type == Token_Begin) {
-                // if(capaicty > 0) {
-                //     this->error = true;
-                //     printf("unexepted {");
-                // }
+                if(capaicty > 0) {
+                    this->error = true;
+                    printf("unexepted {");
+                }
                 struct node* body = create_nary(b, 0, NULL);
                 advance(this);
 
                 while(this->current->type != Token_End) {
-                    append_many_child(body, Function(this));
+                    Function(this, body);
                     if(this->current->type == Token_Semicolon) {
                         advance(this);
                         continue;
                     }
-                    break;
                 }
                 append_many_child(obj, body);
 
@@ -345,7 +382,7 @@ static void Declaration(self) {
             break;
         }
 
-        if(this->current->type == Token_Comma) {
+        else if(this->current->type == Token_Comma) {
             advance(this);
         }
 

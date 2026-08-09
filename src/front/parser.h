@@ -2,8 +2,11 @@
 #define __PARSER_H__
 
 #include "token.h"
+#include <stdbool.h>
 
-typedef struct parser Parser;
+typedef struct parser {
+    bool error;
+} Parser;
 
 Parser* create_parser(Token** tokens);
 void free_parser(Parser* parser);

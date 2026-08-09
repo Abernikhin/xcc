@@ -1,6 +1,7 @@
 
 #include "lexer.h"
 #include "parser.h"
+#include <stdlib.h>
 
 void front(char* source) {
     Lexer* lexer = create_lexer();
