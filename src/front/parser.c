@@ -425,7 +425,7 @@ void Function(self, struct node* body) {
             advance(this);
             if(this->current->type != Token_Semicolon) {
                 this->error = true;
-                printf("exepted ; after break");
+                printf("exepted ; after break\n");
             }
             append_many_child(body, obj);
         } else if(strcmp(this->current->value, "continue") == 0) {
@@ -433,9 +433,69 @@ void Function(self, struct node* body) {
             advance(this);
             if(this->current->type != Token_Semicolon) {
                 this->error = true;
-                printf("exepted ; after continue");
+                printf("exepted ; after continue\n");
             }
             append_many_child(body, obj);
+        } else if(strcmp(this->current->value, "if") == 0) {
+            struct node* obj = create_factor(this->current);
+            advance(this);
+            if(this->current->type != Token_Lparent) {
+                this->error = true;
+                printf("exepted ( after if\n");
+            }
+            Token* b = create_token(Token_Body, "body");
+            obj = cast_to_binary((zeroNode*)obj, Expr(this), create_nary(b, 0, NULL));
+            if(
+                ((binaryNode*)(((binaryNode*)obj)->left_child))->type != Token_LogicalAnd ||
+                ((binaryNode*)(((binaryNode*)obj)->left_child))->type != Token_LogicalOr ||
+                ((binaryNode*)(((binaryNode*)obj)->left_child))->type != Token_LogicalNot ||
+                ((binaryNode*)(((binaryNode*)obj)->left_child))->type != Token_Equal ||
+                ((binaryNode*)(((binaryNode*)obj)->left_child))->type != Token_NotEqual ||
+                ((binaryNode*)(((binaryNode*)obj)->left_child))->type != Token_GreaterEqual ||
+                ((binaryNode*)(((binaryNode*)obj)->left_child))->type != Token_LessEqual ||
+                ((binaryNode*)(((binaryNode*)obj)->left_child))->type != Token_Greater ||
+                ((binaryNode*)(((binaryNode*)obj)->left_child))->type != Token_Less
+            ) {
+                this->error = true;
+                printf("condition mast return bool. last operation must be == != <= >= < > ! && || !\n");
+            }
+            if(this->current->type == Token_Begin) {
+                advance(this);
+
+                while(this->current->type != Token_End) {
+                    Function(this, ((binaryNode*)obj)->right_child);
+                    if(this->current->type == Token_Semicolon) {
+                        advance(this);
+                        continue;
+                    }
+                }
+                advance(this);
+                append_many_child(body, obj);
+            } else {
+                this->error = true;
+                printf("expected { after if(condition)\n");
+            }
+            return;
+        } else if(strcmp(this->current->value, "else") == 0) {
+            struct node* obj = create_nary(this->current, 0, NULL);
+            advance(this);
+            if(this->current->type == Token_Begin) {
+                advance(this);
+
+                while(this->current->type != Token_End) {
+                    Function(this, obj);
+                    if(this->current->type == Token_Semicolon) {
+                        advance(this);
+                        continue;
+                    }
+                }
+                advance(this);
+                append_many_child(body, obj);
+            } else {
+                this->error = true;
+                printf("expected { after else\n");
+            }
+            return;
         }
 
         return;

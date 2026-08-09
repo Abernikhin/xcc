@@ -45,7 +45,9 @@ static char* Keyword[] = {
     "return",
     "loop",
     "break",
-    "continue"
+    "continue",
+    "if",
+    "else"
 };
 
 enum TokenType set_type(char* s) {
@@ -63,7 +65,7 @@ enum TokenType set_type(char* s) {
         if(strcmp(Modifier[i], s) == 0) return Token_Modifier;
     }
 
-    for(char i = 0; i < 4; i++) {
+    for(char i = 0; i < 6; i++) {
         if(strcmp(Keyword[i], s) == 0) return Token_Keyword;
     }
 
