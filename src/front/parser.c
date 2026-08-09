@@ -496,6 +496,193 @@ void Function(self, struct node* body) {
                 printf("expected { after else\n");
             }
             return;
+        } else if(strcmp(this->current->value, "while") == 0) {
+            struct node* obj = create_factor(this->current);
+            advance(this);
+            if(this->current->type != Token_Lparent) {
+                this->error = true;
+                printf("exepted ( after while\n");
+            }
+            Token* b = create_token(Token_Body, "body");
+            obj = cast_to_binary((zeroNode*)obj, Expr(this), create_nary(b, 0, NULL));
+            if(
+                ((binaryNode*)(((binaryNode*)obj)->left_child))->type != Token_LogicalAnd ||
+                ((binaryNode*)(((binaryNode*)obj)->left_child))->type != Token_LogicalOr ||
+                ((binaryNode*)(((binaryNode*)obj)->left_child))->type != Token_LogicalNot ||
+                ((binaryNode*)(((binaryNode*)obj)->left_child))->type != Token_Equal ||
+                ((binaryNode*)(((binaryNode*)obj)->left_child))->type != Token_NotEqual ||
+                ((binaryNode*)(((binaryNode*)obj)->left_child))->type != Token_GreaterEqual ||
+                ((binaryNode*)(((binaryNode*)obj)->left_child))->type != Token_LessEqual ||
+                ((binaryNode*)(((binaryNode*)obj)->left_child))->type != Token_Greater ||
+                ((binaryNode*)(((binaryNode*)obj)->left_child))->type != Token_Less
+            ) {
+                this->error = true;
+                printf("condition mast return bool. last operation must be == != <= >= < > ! && || !\n");
+            }
+            if(this->current->type == Token_Begin) {
+                advance(this);
+
+                while(this->current->type != Token_End) {
+                    Function(this, ((binaryNode*)obj)->right_child);
+                    if(this->current->type == Token_Semicolon) {
+                        advance(this);
+                        continue;
+                    }
+                }
+                advance(this);
+                append_many_child(body, obj);
+            } else {
+                this->error = true;
+                printf("expected { after while(condition)\n");
+            }
+            return;
+        } else if(strcmp(this->current->value, "do") == 0) {
+            struct node* obj = create_factor(this->current);
+            advance(this);
+            if(this->current->type != Token_Begin) {
+                this->error = true;
+                printf("expected { after do\n");
+            }
+            Token* b = create_token(Token_Body, "body");
+            struct node* bodyNode = create_nary(b, 0, NULL);
+            advance(this);
+
+            while(this->current->type != Token_End) {
+                Function(this, bodyNode);
+                if(this->current->type == Token_Semicolon) {
+                    advance(this);
+                    continue;
+                }
+            }
+            advance(this);
+
+            if(this->current->type != Token_Keyword || strcmp(this->current->value, "while") != 0) {
+                this->error = true;
+                printf("expected while after do body\n");
+            } else {
+                advance(this);
+                if(this->current->type != Token_Lparent) {
+                    this->error = true;
+                    printf("expected ( after while\n");
+                }
+                advance(this);
+                struct node* cond = Expr(this);
+                if(this->current->type != Token_Rparent) {
+                    this->error = true;
+                    printf("expected ) after do while condition\n");
+                } else {
+                    advance(this);
+                }
+                if(this->current->type != Token_Semicolon) {
+                    this->error = true;
+                    printf("expected ; after do while\n");
+                } else {
+                    advance(this);
+                }
+
+                obj = cast_to_binary((zeroNode*)obj, cond, bodyNode);
+                append_many_child(body, obj);
+            }
+            free_token(b);
+            return;
+        } else if(strcmp(this->current->value, "for") == 0) {
+            struct node* obj = create_factor(this->current);
+            advance(this);
+            if(this->current->type != Token_Lparent) {
+                this->error = true;
+                printf("exepted ( after for\n");
+            }
+            advance(this);
+
+            Token* a = create_token(Token_Call, "for_init");
+            Token* b = create_token(Token_Call, "for_cond");
+            Token* c = create_token(Token_Call, "for_step");
+            Token* bodyToken = create_token(Token_Body, "body");
+
+            struct node* init = create_nary(a, 0, NULL);
+            if(this->current->type != Token_Semicolon) {
+                struct node* type = Modifier(this);
+                struct node* var;
+
+                while(true) {
+                    struct node* name = Pointer(this);
+
+                    if(this->current->type == Token_Assign) {
+                        advance(this);
+                        struct node* value = Expr(this);
+                        Token* a = create_token(Token_Assign, "=");
+                        Token* t = create_token(Token_Declaration, "declaration");
+                        struct node* data = create_binary(a, name, value);
+                        var = create_binary(t, type, data);
+                        free_token(t);
+                        free_token(a);
+                        append_many_child(init, var);
+                    } else {
+                        Token* t = create_token(Token_Declaration, "declaration");
+                        var = create_binary(t, type, name);
+                        free_token(t);
+                        append_many_child(init, var);
+                    }
+
+                    if(this->current->type == Token_Semicolon) {
+                        break;
+                    }
+
+                    else if(this->current->type == Token_Comma) {
+                        advance(this);
+                    }
+
+                    else {
+                        this->error = true;
+                        printf("exepted in function ;\n");
+                    }
+                }
+            }
+            if(this->current->type == Token_Semicolon) advance(this);
+
+            struct node* cond = create_nary(b, 0, NULL);
+            if(this->current->type != Token_Semicolon) {
+                append_many_child(cond, Expr(this));
+            }
+            if(this->current->type == Token_Semicolon) advance(this);
+
+            struct node* step = create_nary(c, 0, NULL);
+            if(this->current->type != Token_Rparent) {
+                append_many_child(step, Expr(this));
+                advance(this);
+            }
+            if(this->current->type == Token_Rparent) advance(this);
+            print_token(this->current);
+
+            obj = cast_to_nary((zeroNode*)obj, 0, NULL);
+            append_many_child(obj, init);
+            append_many_child(obj, cond);
+            append_many_child(obj, step);
+
+            if(this->current->type == Token_Begin) {
+                advance(this);
+                struct node* loop = create_nary(bodyToken, 0, NULL);
+                while(this->current->type != Token_End) {
+                    Function(this, loop);
+                    if(this->current->type == Token_Semicolon) {
+                        advance(this);
+                        continue;
+                    }
+                }
+                advance(this);
+                append_many_child(obj, loop);
+                append_many_child(body, obj);
+            } else {
+                this->error = true;
+                printf("expected { after for(condition)\n");
+                append_many_child(obj, create_nary(bodyToken, 0, NULL));
+            }
+
+            free_token(a);
+            free_token(b);
+            free_token(c);
+            free_token(bodyToken);
+            return;
         }
 
         return;
